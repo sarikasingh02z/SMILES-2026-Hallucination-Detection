@@ -25,7 +25,7 @@ The task is to figure out whether Qwen2.5-0.5B is hallucinating or telling the t
 
 The model has 24 layers. Each layer produces a hidden state for every token in the input. I needed to collapse all of that into one flat vector per sample.
 
-I went with the simplest approach that made conceptual sense: take the last real token from the final layer. In decoder-only transformers like Qwen, the last token attends to everything before it — it's essentially the model's compressed summary of the entire input. So it felt like the right place to look for hallucination signal.
+I went with the simplest approach that made conceptual sense: take the last real token from the final layer. In decoder-only transformers like Qwen, the last token attends to everything before it, it's essentially the model's compressed summary of the entire input. So it felt like the right place to look for hallucination signal.
 
 This gives a 896-dimensional vector per sample, which is manageable.
 
@@ -67,7 +67,7 @@ Beats the baseline by ~4 points on accuracy and 74% AUROC shows the probe is act
 
 **5-fold stratified cross-validation:** Seemed like a more rigorous evaluation approach. Problem is it reduces training samples per fold to ~468, and the smaller training set hurt the probe consistently. With only 689 total samples, a single larger split actually outperforms k-fold here.
 
-**Deeper MLP with dropout and BatchNorm:** Tried `896 → 512 → 128 → 1` with Dropout(0.4). The train/val gap got slightly smaller but test AUROC didn't improve. Too much complexity for the dataset size.
+**Deeper MLP with dropout and BatchNorm:** Tried 896 → 512 → 128 → 1 with Dropout(0.4). The train/val gap got slightly smaller but test AUROC didn't improve. Too much complexity for the dataset size.
 
 **Logistic Regression with PCA:** Swapped the MLP for a sklearn LogisticRegression pipeline with PCA(64 components). Linear probes work well in the research literature for this kind of task, but here it underperformed the MLP — probably because the last-token features have enough non-linearity that a shallow MLP captures better.
 
